@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "dgSpecHash": "a7rWTgVU0OASegMxmvBmkj4KKI7Ygk7ozld1vBb7VXTnMyeCwQCz/s7wPrJj+IOKQKQTsWe1kxFowKCGAjrkJQ==",
+  "success": true,
+  "projectFilePath": "D:\\Programming\\RiderProjects\\TerrariaSFML\\TerrariaSFML\\TerrariaSFML\\TerrariaSFML.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\radko\\.nuget\\packages\\csfml\\2.5.0\\csfml.2.5.0.nupkg.sha512",
+    "C:\\Users\\radko\\.nuget\\packages\\microsoft.netcore.platforms\\3.1.0\\microsoft.netcore.platforms.3.1.0.nupkg.sha512",
+    "C:\\Users\\radko\\.nuget\\packages\\microsoft.win32.systemevents\\4.7.0\\microsoft.win32.systemevents.4.7.0.nupkg.sha512",
+    "C:\\Users\\radko\\.nuget\\packages\\sfml.audio\\2.5.0\\sfml.audio.2.5.0.nupkg.sha512",
+    "C:\\Users\\radko\\.nuget\\packages\\sfml.graphics\\2.5.0\\sfml.graphics.2.5.0.nupkg.sha512",
+    "C:\\Users\\radko\\.nuget\\packages\\sfml.net\\2.5.0\\sfml.net.2.5.0.nupkg.sha512",
+    "C:\\Users\\radko\\.nuget\\packages\\sfml.system\\2.5.0\\sfml.system.2.5.0.nupkg.sha512",
+    "C:\\Users\\radko\\.nuget\\packages\\sfml.window\\2.5.0\\sfml.window.2.5.0.nupkg.sha512",
+    "C:\\Users\\radko\\.nuget\\packages\\system.drawing.common\\4.7.0\\system.drawing.common.4.7.0.nupkg.sha512",
+    "C:\\Users\\radko\\.nuget\\packages\\t4ccer.noisy\\1.2.0\\t4ccer.noisy.1.2.0.nupkg.sha512"
+  ],
+  "logs": []
+}
