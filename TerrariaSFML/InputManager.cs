@@ -1,24 +1,56 @@
-﻿using SFML.Window;
+﻿using System.Collections.Generic;
+using SFML.Window;
 
 namespace TerrariaSFML
 {
-    public class InputManager
+    public static class Input
     {
-        public static int LeftPressed { private set; get; }
-        public static int RightPressed { private set; get; }
-        public static int DownPressed { private set; get; }
-        public static int UpPressed { private set; get; }
-        public static int PlusPressed { private set; get; }
-        public static int MinusPressed { private set; get; }
+        private static Dictionary<Keyboard.Key, int> Keys { get; set; }
+        private static Dictionary<Keyboard.Key, int> ReleasedKeys { get; set; }
 
-        public static void Update()
+        public static void Init()
         {
-            LeftPressed = Keyboard.IsKeyPressed(Keyboard.Key.A) ? 1 : 0;
-            RightPressed = Keyboard.IsKeyPressed(Keyboard.Key.D) ? 1 : 0;
-            DownPressed = Keyboard.IsKeyPressed(Keyboard.Key.S) ? 1 : 0;
-            UpPressed = Keyboard.IsKeyPressed(Keyboard.Key.W) ? 1 : 0;
-            PlusPressed = Keyboard.IsKeyPressed(Keyboard.Key.Q) ? 1 : 0;
-            MinusPressed = Keyboard.IsKeyPressed(Keyboard.Key.E) ? 1 : 0;
+            Keys = new Dictionary<Keyboard.Key, int>();
+            ReleasedKeys = new Dictionary<Keyboard.Key, int>();
+        }
+
+        public static void UpdateKeyPressed(Keyboard.Key key)
+        {
+            if (!Keys.ContainsKey(key))
+            {
+                Keys.Add(key, 0);
+            }
+
+            Keys[key] = 1;
+        }
+
+        public static void UpdateKeyReleased(Keyboard.Key key)
+        {
+            if (!ReleasedKeys.ContainsKey(key))
+            {
+                ReleasedKeys.Add(key, 0);
+            }
+
+            ReleasedKeys[key] = 1;
+            Keys[key] = 0;
+        }
+
+        public static int KeyPressed(Keyboard.Key key)
+        {
+            return Keys.ContainsKey(key) ? Keys[key] : 0;
+        }
+
+        public static int KeyReleased(Keyboard.Key key)
+        {
+            return ReleasedKeys.ContainsKey(key) ? ReleasedKeys[key] : 0;
+        }
+
+        public static void Reset()
+        {
+            foreach (var key in ReleasedKeys.Keys)
+            {
+                ReleasedKeys[key] = 0;
+            }
         }
     }
 }

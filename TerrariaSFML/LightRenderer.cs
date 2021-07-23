@@ -1,28 +1,46 @@
-﻿using SFML.Graphics;
+﻿using System;
+using SFML.Graphics;
 using SFML.System;
-using SFML.Window;
 
 namespace TerrariaSFML
 {
-    public class LightRenderer
+    public static class Lighter
     {
-        private byte _darkness = 0;
-        private Sprite _surfaceSprite;
-        private RenderTexture _surface;
-        private BlendMode _mpyBlend;
-
-        public LightRenderer(uint width, uint height)
+        private static RenderTexture _texture;
+        private static World _world;
+        public static void Init(World world)
         {
-            _surfaceSprite = new Sprite();
-            _surface = new RenderTexture(width*Tile.TileSize,height*Tile.TileSize);
-            _mpyBlend = BlendMode.Multiply;
+            _texture = new RenderTexture(Program.Window.Size.X,Program.Window.Size.Y);
+            _world = world;
         }
-        public void DrawLightSurface()
+
+        public static Texture GetLightTexture()
         {
-            _surface.Clear(new Color(_darkness,_darkness,_darkness));
-            _surface.Display();
-            _surfaceSprite.Texture = _surface.Texture;
-            Program.Window.Draw(_surfaceSprite, new RenderStates(_mpyBlend));
+            _texture.Clear(Color.White);
+            var lu = (Vector2i) ((_world.Camera.View.Center - _world.Camera.View.Size / 2) / Tile.TileSize);
+            var rd = (Vector2i) ((_world.Camera.View.Center + _world.Camera.View.Size / 2) / Tile.TileSize);
+
+            for (var i = Math.Max(0, lu.X); i < Math.Min(_world.WorldWidth, rd.X); i++)
+            {
+                for (var j = Math.Max(0, lu.Y); j < Math.Min(_world.WorldHeight, rd.Y); j++)
+                {
+                    Tile tile = _world.GetTile(i, j);
+                    if (tile != null)
+                    {
+                        var tileRect = new RectangleShape(new Vector2f(Tile.TileSize,Tile.TileSize));
+                        tileRect.Position = (Vector2f)Program.Window.MapCoordsToPixel(tile.Position)-(_world.Camera.View.Center-_world.Camera.View.Size/2);
+                        tileRect.FillColor = Color.Black;
+                        _texture.Draw(tileRect);
+                    }
+                }
+            }
+            
+            Program.Window.Draw(new Sprite(_texture.Texture)
+            {
+                Position = _world.Camera.View.Center-_world.Camera.View.Size/2
+                    
+            });
+            return _texture.Texture;
         }
     }
 }

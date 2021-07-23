@@ -9,51 +9,55 @@ namespace TerrariaSFML
     {
         public static RenderWindow Window { private set; get; }
         public static Game Game { private set; get; }
-
-        public static View View { private set; get; }
-
-        public static FloatRect getViewRect()
-        {
-            var viewRectPos = (View.Center - View.Size / 2);
-            return new FloatRect(viewRectPos, View.Size);
-        }
+        
 
         static void Main(string[] args)
         {
+            var clock = new Clock();
+            
             //Create window
             Window = new RenderWindow(new VideoMode(1920, 1080), "Terraria");
             Window.SetFramerateLimit(60);
-            
-            //Load content and create new game process
+
+            //Load content, initialize input system  and create new game process
             Content.Load();
+            Input.Init();
             Game = new Game();
 
             //Control Close and Resize events
             Window.Closed += WindowClose;
             Window.Resized += WindowResize;
+            Window.KeyPressed += KeyPressed;
+            Window.KeyReleased += KeyReleased;
 
-           
+            
+            Debug.AddItem("main", "FPS", 0.ToString());
 
-            Clock clock = new Clock();
+            
             clock.Restart();
-            int cnt = 0;
+            var cnt = 0;
             while (Window.IsOpen)
             {
-                cnt++;
                 Window.DispatchEvents();
+
+
                 Window.Clear(Color.Black);
 
                 Game.Update();
                 Game.Draw();
                 Window.Display();
-                //GC.Collect();
+
+
                 var end = clock.ElapsedTime;
-                clock.Restart();
-                if (cnt > 40)
+                cnt++;
+                if (cnt > 20)
                 {
-                    Console.WriteLine(1e6 / end.AsMicroseconds());
+                    Debug.SetItem("main", "FPS", ((int) 1e6 / end.AsMicroseconds()).ToString());
                     cnt = 0;
                 }
+
+                Input.Reset();
+                clock.Restart();
             }
         }
 
@@ -66,6 +70,16 @@ namespace TerrariaSFML
         private static void WindowClose(object sender, EventArgs e)
         {
             Window.Close();
+        }
+
+        private static void KeyPressed(object sender, KeyEventArgs e)
+        {
+            Input.UpdateKeyPressed(e.Code);
+        }
+
+        private static void KeyReleased(object sender, KeyEventArgs e)
+        {
+            Input.UpdateKeyReleased(e.Code);
         }
     }
 }

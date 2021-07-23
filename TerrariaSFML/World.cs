@@ -1,13 +1,11 @@
 ﻿using System;
-using System.IO.IsolatedStorage;
 using SFML.Graphics;
 using SFML.System;
-using SFML.Window;
-using t4ccer.Noisy;
+using TerrariaSFML.Entities;
 
 namespace TerrariaSFML
 {
-    class World : Transformable, Drawable
+    public class World : Transformable, Drawable
     {
         public int WorldWidth { get; }
         public int WorldHeight { get; }
@@ -16,36 +14,38 @@ namespace TerrariaSFML
 
         private Tile[,] tiles;
 
-        //public LightRenderer LightRenderer;
         public static Random Rand { private set; get; }
 
         public readonly Camera Camera;
 
         private readonly Perlin _noise = new();
 
-        public World()
+
+        public World(int width, int height)
         {
-            WorldWidth = 1200;
-            WorldHeight = 600;
+            WorldWidth = width;
+            WorldHeight = height;
             tiles = new Tile[WorldWidth, WorldHeight];
+            Camera = new Camera(new Vector2f(WorldWidth * Tile.TileSize / 2f, WorldHeight * Tile.TileSize / 2f), this);
+            Lighter.Init(this);
             
-            Camera = new Camera(new Vector2f(WorldWidth * Tile.TileSize / 2, WorldHeight * Tile.TileSize / 2), this);
         }
 
         public void GenerateWorld(int seed = -1)
         {
-            Rand = seed >= 0 ? new Random(seed) : new Random((int) DateTime.Now.Ticks);
+            seed = seed >= 0 ? seed : (int) DateTime.Now.Ticks;
+            Rand = new Random(seed);
 
             for (int i = 0; i < WorldWidth; i++)
             {
-                var off = (int) (20 * _noise.OctavePerlin((float) i / 15, 100, 100, 1, 1));
+                var off = (int) (20 * _noise.OctavePerlin((float) i / 15, seed, 100, 1, 1));
 
                 for (var j = WorldHeight / 2 - off; j < WorldHeight / 2 + 50; j++)
                 {
                     SetTile(TileType.Ground, i, j);
                 }
 
-                off = (int) (20 * _noise.OctavePerlin((float) i / 15, 200, 100, 1, 1));
+                off = (int) (20 * _noise.OctavePerlin((float) i / 15, seed, 100, 1, 1));
 
                 for (var j = WorldHeight / 2 + 50 - off; j < WorldHeight; j++)
                 {
@@ -94,7 +94,8 @@ namespace TerrariaSFML
                 }
             }
 
-            //LightRenderer.DrawLightSurface();
+
+            
         }
 
         public Tile GetTile(int i, int j)

@@ -1,11 +1,9 @@
-﻿using System;
-using System.Data;
-using SFML.Graphics;
+﻿using SFML.Graphics;
 using SFML.System;
 
 namespace TerrariaSFML
 {
-    enum TileType
+    public enum TileType
     {
         None,
         Ground,
@@ -13,17 +11,15 @@ namespace TerrariaSFML
         Stone
     }
 
-    class Tile : Transformable, Drawable
+    public class Tile : Transformable, Drawable
     {
         public const int TileSize = 16;
-
-        static int cnt = 0;
         private SpriteSheet SpriteSheet { get; set; }
-        public TileType Type { get; private set; }
+        private TileType Type { get; set; }
 
-        private RectangleShape rect;
+        private readonly RectangleShape _rect;
 
-        public Tile[] _neighbours;
+        private readonly Tile[] _neighbours;
 
         public Tile this[int index]
         {
@@ -33,16 +29,16 @@ namespace TerrariaSFML
                 Update();
             }
 
-            get { return _neighbours[index]; }
+            get => _neighbours[index];
         }
 
         public Tile(TileType type, Tile up, Tile right, Tile down, Tile left)
         {
             Type = type;
-            rect = new RectangleShape(new Vector2f(TileSize, TileSize));
+            _rect = new RectangleShape(new Vector2f(TileSize, TileSize));
             _neighbours = new[] {up, right, down, left};
 
-            for (int i = 0; i < 4; i++)
+            for (var i = 0; i < 4; i++)
             {
                 if (_neighbours[i] != null)
                 {
@@ -54,12 +50,12 @@ namespace TerrariaSFML
         }
 
 
-        public void Update()
+        private void Update()
         {
             var config = CalculateConfiguration();
             var offset = World.Rand.Next(0, 3);
 
-            rect.TextureRect = config switch
+            _rect.TextureRect = config switch
             {
                 0 => SpriteSheet.GetTextureRect(9 + offset, 3),
                 1 => SpriteSheet.GetTextureRect(6 + offset, 3),
@@ -77,7 +73,7 @@ namespace TerrariaSFML
                 13 => SpriteSheet.GetTextureRect(4, offset),
                 14 => SpriteSheet.GetTextureRect(offset + 1, 0),
                 15 => SpriteSheet.GetTextureRect(offset + 1, 1),
-                _ => rect.TextureRect
+                _ => _rect.TextureRect
             };
 
             switch (Type)
@@ -114,7 +110,7 @@ namespace TerrariaSFML
                 TileType.Stone => Content.TexTiles9,
                 _ => SpriteSheet
             };
-            rect.Texture = SpriteSheet.Texture;
+            _rect.Texture = SpriteSheet.Texture;
         }
 
         private int CalculateConfiguration()
@@ -130,7 +126,7 @@ namespace TerrariaSFML
         public void Draw(RenderTarget target, RenderStates states)
         {
             states.Transform *= Transform;
-            target.Draw(rect, states);
+            target.Draw(_rect, states);
         }
     }
 }
