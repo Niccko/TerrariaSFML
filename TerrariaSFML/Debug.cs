@@ -69,6 +69,7 @@ namespace TerrariaSFML
                 Text text = new Text(item.Key + ": " + item.Value,_font,18);
                 text.Position = _rect.Position + new Vector2f(_rect.Size.X/8, index * 50+15);
                 Program.Window.Draw(text);
+                index++;
             }
         }
     }

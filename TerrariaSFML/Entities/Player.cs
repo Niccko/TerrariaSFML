@@ -7,32 +7,41 @@ namespace TerrariaSFML.Entities
 {
     public class Player : NPC
     {
-        private int _jumpForce = 15;
-        private int _maxSpeed = 10;
-        private int _speed = 0;
-        private float _acceleration = 0.55f;
+        private int JumpForce = 9;
+        private int MaxSpeed = 3;
+        private float _acceleration = 40f;
+        private bool _canJump = true;
 
         public Player(World world) : base(world)
         {
-            rect = new RectangleShape(new Vector2f(Tile.TileSize * 1.5f, Tile.TileSize * 2.8f));
-            rect.Origin = new Vector2f(rect.Size.X / 2, 0);
-            rect.FillColor = Color.White;
-
-            movement = new Vector2f();
+            Rect = new RectangleShape(new Vector2f(Tile.TileSize * 2, Tile.TileSize * 3));
+            Rect.Origin = new Vector2f(Rect.Size.X / 2, 0);
+            Rect.FillColor = Color.White;
+            Movement = new Vector2f();
+            Debug.AddItem("main","Can jump","");
         }
 
-        public override void DrawNPC(RenderTarget target, RenderStates states)
+        protected override void DrawNPC(RenderTarget target, RenderStates states)
         {
-            target.Draw(rect, states);
+            target.Draw(Rect, states);
         }
 
         private void UpdateMovement()
         {
-            if (Input.KeyPressed(Keyboard.Key.Space) == 1 && !inAir)
-                velocity.Y = -_jumpForce;
+            Debug.SetItem("main","Can jump",_canJump.ToString());
+            if (Input.KeyPressed(Keyboard.Key.Space) == 1 && !InAir && _canJump)
+            {
+                Velocity.Y = -JumpForce;
+                _canJump = false;
+            }
 
-            if (Input.KeyReleased(Keyboard.Key.Space) == 1 && velocity.Y < -4)
-                velocity.Y = -4;
+
+            if (Input.KeyReleased(Keyboard.Key.Space) == 1)
+            {
+                if(Velocity.Y < -5)
+                    Velocity.Y = -5;
+                _canJump = true;
+            }
 
             var isMoveLeft = Keyboard.IsKeyPressed(Keyboard.Key.A);
             var isMoveRight = Keyboard.IsKeyPressed(Keyboard.Key.D);
@@ -40,34 +49,33 @@ namespace TerrariaSFML.Entities
 
             if (isMove)
             {
+                if (InAir) _acceleration = 10;
                 if (isMoveLeft)
                 {
-                    if (movement.X > 0)
-                        movement.X = 0;
+                    if (Movement.X > 0)
+                        Movement.X = 0;
 
-                    movement.X -= _acceleration;
+                    Movement.X -= _acceleration * Program.DeltaTime;
                 }
-                else if (isMoveRight)
+                else
                 {
-                    if (movement.X < 0)
-                        movement.X = 0;
+                    if (Movement.X < 0)
+                        Movement.X = 0;
 
-                    movement.X += _acceleration;
+                    Movement.X += _acceleration * Program.DeltaTime;
                 }
 
-                if (movement.X > _maxSpeed)
-                    movement.X = _maxSpeed;
-                else if (movement.X < -_maxSpeed)
-                    movement.X = -_maxSpeed;
+                Movement.X = Math.Clamp(Movement.X, -MaxSpeed, MaxSpeed);
             }
             else
             {
-                movement *= 0.8f;
+                _acceleration = 40;
+                Movement *= 0.8f;
             }
         }
 
 
-        public override void UpdateNPC()
+        protected override void UpdateNPC()
         {
             UpdateMovement();
         }

@@ -105,9 +105,9 @@ namespace TerrariaSFML
         {
             SpriteSheet = Type switch
             {
-                TileType.Ground => Content.TexTileGround,
-                TileType.Grass => Content.TexTileGrass,
-                TileType.Stone => Content.TexTiles9,
+                TileType.Ground => Content.Tiles[0],
+                TileType.Grass => Content.Tiles[2],
+                TileType.Stone => Content.Tiles[9],
                 _ => SpriteSheet
             };
             _rect.Texture = SpriteSheet.Texture;

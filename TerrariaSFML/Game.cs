@@ -12,24 +12,26 @@ namespace TerrariaSFML
 
         public Player Player { private set; get; }
 
-        public Shader shader { private set; get; }
+        private Shader Shader { set; get; }
         public Game()
         {
+            Debug.AddMenu(0,0,"main");
             world = new World(400,400);
             world.GenerateWorld();
             Player = new Player(world);
             Player.Spawn(new Vector2f(world.WorldWidth*Tile.TileSize/2f,2800));
 
-            shader = new Shader(null, null, "..\\..\\..\\Shaders\\light.frag");
+            Shader = new Shader(null, null, "..\\..\\..\\Shaders\\light.frag");
             //shader.SetUniform("texture",Lighter.GetLightTexture());
-            Debug.AddMenu(0,0,"main");
+            
+            Debug.AddItem("main","FPS","0");
             
         }
 
         public void Update()
         {
             Player.Update();
-            world.Camera.SetPosition(Player.Position);
+            world.Camera.Follow(Player.Position);
             if (Mouse.IsButtonPressed(Mouse.Button.Left))
             {
                 var pos = Mouse.GetPosition(Program.Window);
@@ -48,10 +50,10 @@ namespace TerrariaSFML
 
         public void Draw()
         {
-            Shader.Bind(shader);
+            //Shader.Bind(Shader);
             Program.Window.Draw(world);
             Program.Window.Draw(Player);
-            Shader.Bind(null);
+            //Shader.Bind(null);
             Debug.Draw(world.Camera.View);
         }
     }

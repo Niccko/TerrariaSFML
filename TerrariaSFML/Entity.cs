@@ -14,28 +14,28 @@ namespace TerrariaSFML
 
     public abstract class Entity : Transformable, Drawable
     {
-        protected RectangleShape rect;
-        protected Vector2f velocity;
-        protected Vector2f movement;
-        protected World world;
-        protected bool inAir = true;
+        protected RectangleShape Rect;
+        protected Vector2f Velocity;
+        protected Vector2f Movement;
+        private readonly World _world;
+        protected bool InAir = true;
 
-        public Entity(World world)
+        protected Entity(World world)
         {
-            this.world = world;
+            _world = world;
         }
 
-        public void Update()
+        protected void Update()
         {
             UpdatePhysics();
         }
 
         private void UpdatePhysics()
         {
-            velocity.X *= 0.99f;
-            velocity.Y += 0.55f;
+            Velocity.X *= 0.99f;
+            Velocity.Y += 20*Program.DeltaTime;
 
-            var offset = velocity + movement;
+            var offset = (Velocity + Movement) * Program.DeltaTime * 100;
             var dist = Math.Sqrt(offset.X * offset.X + offset.Y * offset.Y);
 
             var countStep = 1;
@@ -43,95 +43,131 @@ namespace TerrariaSFML
                 countStep = (int) dist / (Tile.TileSize / 2);
 
             var nextPos = Position + offset;
-            var stepPos = Position - rect.Origin;
-            var stepRect = new FloatRect(stepPos, rect.Size);
+            var stepPos = Position - Rect.Origin;
             var stepVec = (nextPos - Position) / countStep;
 
-            for (int step = 0; step < countStep; step++)
+            for (var step = 0; step < countStep; step++)
             {
-                bool breakStep = false;
+                var breakStep = false;
                 stepPos += stepVec;
-                stepRect = new FloatRect(stepPos, rect.Size);
+                var stepRect = new FloatRect(stepPos, Rect.Size);
 
-                int i = (int) (stepPos.X + rect.Size.X / 2) / Tile.TileSize;
-                int j = (int) (stepPos.Y + rect.Size.Y) / Tile.TileSize;
+                var i = (int) (stepPos.X + Rect.Size.X / 2) / Tile.TileSize;
+                var j = (int) (stepPos.Y + Rect.Size.Y) / Tile.TileSize;
 
-                Tile tile = world.GetTile(i, j);
-                if (tile != null)
+                Tile[] tiles =
                 {
-                    FloatRect tileRect = new FloatRect(tile.Position, new Vector2f(Tile.TileSize, Tile.TileSize));
-
-                    if (handleCollision(stepRect, tileRect, Direction.Down, ref stepPos))
+                    _world.GetTile(i, j),
+                    _world.GetTile(i - 1, j)
+                };
+                foreach (var tile in tiles)
+                {
+                    if (tile != null)
                     {
-                        velocity.Y = 0;
-                        inAir = false;
-                        breakStep = true;
+                        var tileRect = new FloatRect(tile.Position, new Vector2f(Tile.TileSize, Tile.TileSize));
+
+                        if (HandleCollision(stepRect, tileRect, Direction.Down, ref stepPos))
+                        {
+                            Velocity.Y = 0;
+                            InAir = false;
+                            breakStep = true;
+                        }
+                        else
+                        {
+                            InAir = true;
+                        }
                     }
                     else
                     {
-                        inAir = true;
+                        InAir = true;
                     }
-                }
-                else
-                {
-                    inAir = true;
-                }
-                
-                if (handleHorizontalCollision(i, j, -1, ref stepPos, stepRect) || handleHorizontalCollision(i, j, 1, ref stepPos, stepRect))
-                {
-                    breakStep = true;
-                }
 
-                if (breakStep)
-                    break;
+
+                    if (HandleHorizontalCollision(i, j, -1, ref stepPos, stepRect) ||
+                        HandleHorizontalCollision(i, j, 1, ref stepPos, stepRect))
+                    {
+                        breakStep = true;
+                    }
+
+                    if (breakStep)
+                        break;
+                }
             }
 
-            Position = stepPos + rect.Origin;
+            Position = stepPos + Rect.Origin;
         }
 
-        private bool handleCollision(FloatRect entityRect, FloatRect tileRect, Direction dir, ref Vector2f pos)
+        private bool HandleCollision(FloatRect entityRect, FloatRect tileRect, Direction dir, ref Vector2f pos)
         {
-            if (entityRect.Intersects(tileRect))
+            if (!entityRect.Intersects(tileRect)) return false;
+            pos = dir switch
             {
-                pos = dir switch
-                {
-                    Direction.Up => new Vector2f(pos.X, tileRect.Top + tileRect.Height - 1),
-                    Direction.Right => new Vector2f(tileRect.Left - entityRect.Width + 1, pos.Y),
-                    Direction.Down => new Vector2f(pos.X, tileRect.Top - entityRect.Height + 1),
-                    Direction.Left => new Vector2f(tileRect.Left + tileRect.Width - 1, pos.Y),
-                    _ => pos
-                };
-                return true;
-            }
-
-            return false;
+                Direction.Up => new Vector2f(pos.X, tileRect.Top + tileRect.Height - 1),
+                Direction.Right => new Vector2f(tileRect.Left - entityRect.Width + 1, pos.Y),
+                Direction.Down => new Vector2f(pos.X, tileRect.Top - entityRect.Height + 1),
+                Direction.Left => new Vector2f(tileRect.Left + tileRect.Width - 1, pos.Y),
+                _ => pos
+            };
+            return true;
         }
-        
-        bool handleHorizontalCollision(int i, int j, int iOffset, ref Vector2f stepPos, FloatRect stepRect)
+
+        private bool HandleHorizontalCollision(int i, int j, int iOffset, ref Vector2f stepPos, FloatRect stepRect)
         {
             var dirType = iOffset > 0 ? Direction.Right : Direction.Left;
 
-            Tile[] walls = new Tile[] {
-                world.GetTile(i + iOffset, j - 1),
-                world.GetTile(i + iOffset, j - 2),
-                world.GetTile(i + iOffset, j - 3),
+            Tile[] walls =
+            {
+                _world.GetTile(i + iOffset, j - 1),
+                _world.GetTile(i + iOffset, j - 2),
+                _world.GetTile(i + iOffset, j - 3),
             };
 
-            bool isWallCollided = false;
-            foreach (Tile t in walls)
+            var isWallCollided = false;
+            foreach (var t in walls)
             {
                 if (t == null) continue;
 
-                FloatRect tileRect = new FloatRect(t.Position, new Vector2f(Tile.TileSize, Tile.TileSize));
-                
+                var tileRect = new FloatRect(t.Position, new Vector2f(Tile.TileSize, Tile.TileSize));
 
-                if (handleCollision(stepRect, tileRect, dirType, ref stepPos))
+
+                if (HandleCollision(stepRect, tileRect, dirType, ref stepPos))
                 {
                     isWallCollided = true;
                 }
             }
 
             return isWallCollided;
+        }
+
+        private bool HandleVerticalCollision(int i, int j, int jOffset, ref Vector2f stepPos, FloatRect stepRect)
+        {
+            var dirType = jOffset > 0 ? Direction.Down : Direction.Up;
+
+            Tile[] walls =
+            {
+                _world.GetTile(i - 1, j + jOffset),
+                _world.GetTile(i, j + jOffset)
+            };
+
+            var collision = false;
+            foreach (var tile in walls)
+            {
+                if (tile == null) continue;
+                var tileRect = new FloatRect(tile.Position, new Vector2f(Tile.TileSize, Tile.TileSize));
+
+                if (!HandleCollision(stepRect, tileRect, dirType, ref stepPos)) continue;
+                collision = true;
+                if (dirType == Direction.Down)
+                {
+                    Velocity.Y = 0;
+                    InAir = false;
+                    break;
+                }
+
+                InAir = true;
+            }
+
+            return collision;
         }
 
         public abstract void Draw(RenderTarget target, RenderStates states);

@@ -1,5 +1,4 @@
-﻿using System;
-using SFML.Graphics;
+﻿using SFML.Graphics;
 using SFML.System;
 
 namespace TerrariaSFML
@@ -35,6 +34,15 @@ namespace TerrariaSFML
                 pos.Y >= (View.Size / 2).Y && pos.Y <= _world.WorldHeight * Tile.TileSize - (View.Size / 2).Y)
             {
                 View.Center = pos;
+            }
+        }
+
+        public void Follow(Vector2f pos)
+        {
+            if (pos.X >= (View.Size / 2).X && pos.X <= _world.WorldWidth * Tile.TileSize - (View.Size / 2).X &&
+                pos.Y >= (View.Size / 2).Y && pos.Y <= _world.WorldHeight * Tile.TileSize - (View.Size / 2).Y)
+            {
+                Move((pos - View.Center)/10);
             }
         }
     }

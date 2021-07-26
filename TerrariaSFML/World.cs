@@ -1,7 +1,6 @@
 ﻿using System;
 using SFML.Graphics;
 using SFML.System;
-using TerrariaSFML.Entities;
 
 namespace TerrariaSFML
 {
@@ -12,7 +11,7 @@ namespace TerrariaSFML
 
         private const int DrawBuffer = 2;
 
-        private Tile[,] tiles;
+        private Tile[,] _tiles;
 
         public static Random Rand { private set; get; }
 
@@ -25,7 +24,7 @@ namespace TerrariaSFML
         {
             WorldWidth = width;
             WorldHeight = height;
-            tiles = new Tile[WorldWidth, WorldHeight];
+            _tiles = new Tile[WorldWidth, WorldHeight];
             Camera = new Camera(new Vector2f(WorldWidth * Tile.TileSize / 2f, WorldHeight * Tile.TileSize / 2f), this);
             Lighter.Init(this);
             
@@ -38,14 +37,12 @@ namespace TerrariaSFML
 
             for (int i = 0; i < WorldWidth; i++)
             {
-                var off = (int) (20 * _noise.OctavePerlin((float) i / 15, seed, 100, 1, 1));
-
-                for (var j = WorldHeight / 2 - off; j < WorldHeight / 2 + 50; j++)
+                for (var j = WorldHeight / 2; j < WorldHeight / 2 + 50; j++)
                 {
                     SetTile(TileType.Ground, i, j);
                 }
 
-                off = (int) (20 * _noise.OctavePerlin((float) i / 15, seed, 100, 1, 1));
+                var off = (int) (20 * _noise.OctavePerlin((float) i / 15, seed, 100, 1, 1));
 
                 for (var j = WorldHeight / 2 + 50 - off; j < WorldHeight; j++)
                 {
@@ -66,11 +63,11 @@ namespace TerrariaSFML
                 {
                     Position = new Vector2f(i * Tile.TileSize, j * Tile.TileSize) + Position
                 };
-                tiles[i, j] = tile;
+                _tiles[i, j] = tile;
             }
             else
             {
-                tiles[i, j] = null;
+                _tiles[i, j] = null;
                 if (upTile != null) upTile[2] = null;
                 if (rightTile != null) rightTile[3] = null;
                 if (downTile != null) downTile[0] = null;
@@ -89,19 +86,22 @@ namespace TerrariaSFML
             {
                 for (var j = Math.Max(0, lu.Y - DrawBuffer); j < Math.Min(WorldHeight, rd.Y + DrawBuffer); j++)
                 {
-                    if (tiles[i, j] != null)
-                        target.Draw(tiles[i, j]);
+                    if (_tiles[i, j] != null)
+                        target.Draw(_tiles[i, j]);
                 }
             }
 
-
+            if(Program.frameCount%2==0)
+                Lighter.UpdateLightTexture();
+                
             
+            Lighter.DrawLightTexture();
         }
 
         public Tile GetTile(int i, int j)
         {
             if (i >= 0 && j >= 0 && i < WorldWidth && j < WorldHeight)
-                return tiles[i, j];
+                return _tiles[i, j];
 
             return null;
         }

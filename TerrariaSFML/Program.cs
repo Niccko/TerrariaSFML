@@ -10,14 +10,20 @@ namespace TerrariaSFML
         public static RenderWindow Window { private set; get; }
         public static Game Game { private set; get; }
         
-
+        public static float DeltaTime { private set; get; }
+        
+        public static int frameCount { private set; get; }
+        public static float timeCount { private set; get; }
         static void Main(string[] args)
         {
             var clock = new Clock();
             
             //Create window
             Window = new RenderWindow(new VideoMode(1920, 1080), "Terraria");
-            Window.SetFramerateLimit(60);
+            //Window.SetFramerateLimit(60);
+            Window.SetVerticalSyncEnabled(true);
+
+            
 
             //Load content, initialize input system  and create new game process
             Content.Load();
@@ -29,35 +35,30 @@ namespace TerrariaSFML
             Window.Resized += WindowResize;
             Window.KeyPressed += KeyPressed;
             Window.KeyReleased += KeyReleased;
-
             
-            Debug.AddItem("main", "FPS", 0.ToString());
-
+            Debug.AddItem("main","Time count","");
+            Debug.AddItem("main","Frame count","");
             
             clock.Restart();
-            var cnt = 0;
             while (Window.IsOpen)
             {
                 Window.DispatchEvents();
-
 
                 Window.Clear(Color.Black);
 
                 Game.Update();
                 Game.Draw();
                 Window.Display();
-
-
-                var end = clock.ElapsedTime;
-                cnt++;
-                if (cnt > 20)
-                {
-                    Debug.SetItem("main", "FPS", ((int) 1e6 / end.AsMicroseconds()).ToString());
-                    cnt = 0;
-                }
-
+                DeltaTime = clock.Restart().AsSeconds();
                 Input.Reset();
+                
                 clock.Restart();
+                if(frameCount%10==0)
+                    Debug.SetItem("main","FPS", ((int)(1/DeltaTime)).ToString());
+                frameCount++;
+                timeCount += DeltaTime;
+                Debug.SetItem("main","Frame count",frameCount.ToString());
+                Debug.SetItem("main","Time count",timeCount.ToString("0.00"));
             }
         }
 
